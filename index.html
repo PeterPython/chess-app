@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opening Coach</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">Chess Learning App</p>
+      <h1>Opening Coach</h1>
+      <p>Train five core openings and get immediate feedback when you drift from best book moves.</p>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel controls">
+        <h2>Lesson Setup</h2>
+
+        <label class="input-block" for="sideSelect">Your side</label>
+        <select id="sideSelect">
+          <option value="w">White</option>
+          <option value="b">Black</option>
+        </select>
+
+        <label class="input-block" for="openingSelect">Opening</label>
+        <select id="openingSelect"></select>
+
+        <div class="button-row">
+          <button id="resetBtn">Start Lesson</button>
+          <button id="hintBtn" class="secondary">Show Hint</button>
+        </div>
+
+        <p id="lessonStatus" class="status"></p>
+        <p id="gameStatus" class="status"></p>
+      </aside>
+
+      <section class="panel board-panel">
+        <div id="board" class="board" aria-label="Chess board"></div>
+      </section>
+
+      <aside class="panel coach">
+        <h2 id="openingName"></h2>
+        <p id="openingDescription"></p>
+
+        <div class="progress-shell" aria-hidden="true">
+          <div id="progressBar"></div>
+        </div>
+        <p id="progressText" class="small-text"></p>
+
+        <h3>Main Line</h3>
+        <ol id="openingLine" class="line-list"></ol>
+
+        <h3>Game Moves</h3>
+        <ol id="moveLog" class="line-list"></ol>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
