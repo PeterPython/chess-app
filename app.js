@@ -58,6 +58,8 @@ const PIECE_GLYPHS = {
 };
 
 const boardEl = document.getElementById("board");
+const rankLabelsEl = document.getElementById("rankLabels");
+const fileLabelsEl = document.getElementById("fileLabels");
 const sideSelect = document.getElementById("sideSelect");
 const openingSelect = document.getElementById("openingSelect");
 const resetBtn = document.getElementById("resetBtn");
@@ -386,6 +388,7 @@ function renderBoard() {
   boardEl.innerHTML = "";
   const files = playerSide === "w" ? FILES : [...FILES].reverse();
   const ranks = playerSide === "w" ? [...RANKS].reverse() : RANKS;
+  renderCoordinates(files, ranks);
 
   for (const rank of ranks) {
     for (const file of files) {
@@ -410,6 +413,25 @@ function renderBoard() {
       button.addEventListener("click", () => handleSquareClick(square));
       boardEl.appendChild(button);
     }
+  }
+}
+
+function renderCoordinates(files, ranks) {
+  rankLabelsEl.innerHTML = "";
+  fileLabelsEl.innerHTML = "";
+
+  for (const rank of ranks) {
+    const rankLabel = document.createElement("span");
+    rankLabel.className = "coord-label";
+    rankLabel.textContent = rank;
+    rankLabelsEl.appendChild(rankLabel);
+  }
+
+  for (const file of files) {
+    const fileLabel = document.createElement("span");
+    fileLabel.className = "coord-label";
+    fileLabel.textContent = file;
+    fileLabelsEl.appendChild(fileLabel);
   }
 }
 

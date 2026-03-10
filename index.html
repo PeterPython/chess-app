@@ -37,7 +37,12 @@
       </aside>
 
       <section class="panel board-panel">
-        <div id="board" class="board" aria-label="Chess board"></div>
+        <div class="board-frame">
+          <div id="rankLabels" class="rank-labels" aria-hidden="true"></div>
+          <div id="board" class="board" aria-label="Chess board"></div>
+          <div class="board-corner" aria-hidden="true"></div>
+          <div id="fileLabels" class="file-labels" aria-hidden="true"></div>
+        </div>
       </section>
 
       <aside class="panel coach">
