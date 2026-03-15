@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="opening-coach-api-base-url" content="http://localhost:4000" />
   <title>Opening Coach</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -11,29 +12,77 @@
     <header class="hero">
       <p class="eyebrow">Chess Learning App</p>
       <h1>Opening Coach</h1>
-      <p>Train five core openings and get immediate feedback when you drift from best book moves.</p>
+      <p>Train critical openings, get instant move feedback, and track progress per account with spaced repetition.</p>
     </header>
 
     <section class="workspace">
       <aside class="panel controls">
-        <h2>Lesson Setup</h2>
+        <section id="accountSection" class="control-section">
+          <h2>Account</h2>
 
-        <label class="input-block" for="sideSelect">Your side</label>
-        <select id="sideSelect">
-          <option value="w">White</option>
-          <option value="b">Black</option>
-        </select>
+          <div id="accountExpanded">
+            <label class="input-block" for="userSelect">Saved users</label>
+            <select id="userSelect"></select>
 
-        <label class="input-block" for="openingSelect">Opening</label>
-        <select id="openingSelect"></select>
+            <label class="input-block" for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" placeholder="Enter password" />
 
-        <div class="button-row">
-          <button id="resetBtn">Start Lesson</button>
-          <button id="hintBtn" class="secondary">Show Hint</button>
-        </div>
+            <div class="button-row">
+              <button id="loginBtn">Log In</button>
+            </div>
 
-        <p id="lessonStatus" class="status"></p>
-        <p id="gameStatus" class="status"></p>
+            <label class="input-block" for="newUsername">New username</label>
+            <input id="newUsername" type="text" placeholder="Create username" />
+
+            <label class="input-block" for="newPassword">New password</label>
+            <input id="newPassword" type="password" placeholder="Create password" />
+
+            <button id="createUserBtn" class="accent-alt">Create Account</button>
+            <p id="accountStatus" class="status"></p>
+          </div>
+
+          <div id="accountCompact" class="account-compact" hidden>
+            <p id="accountCompactUser" class="status"></p>
+            <button id="logoutBtn" class="secondary">Log Out</button>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <h2>Lesson Setup</h2>
+
+          <label class="input-block" for="sideSelect">Your side</label>
+          <select id="sideSelect">
+            <option value="w">White</option>
+            <option value="b">Black</option>
+          </select>
+
+          <label class="input-block" for="modeSelect">Training mode</label>
+          <select id="modeSelect">
+            <option value="opening">Opening Focus</option>
+            <option value="spaced">Spaced Repetition</option>
+          </select>
+
+          <label class="input-block" for="openingSelect">Opening</label>
+          <select id="openingSelect"></select>
+
+          <label class="input-block" for="strengthSelect">Opponent strength</label>
+          <select id="strengthSelect">
+            <option value="1">1 (Easiest)</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5 (Strongest)</option>
+          </select>
+
+          <div class="button-row">
+            <button id="resetBtn">Start Lesson</button>
+            <button id="hintBtn" class="secondary">Show Hint</button>
+          </div>
+
+          <p id="spacedStatus" class="status"></p>
+          <p id="lessonStatus" class="status"></p>
+          <p id="gameStatus" class="status"></p>
+        </section>
       </aside>
 
       <section class="panel board-panel">
@@ -54,8 +103,16 @@
         </div>
         <p id="progressText" class="small-text"></p>
 
-        <h3>Main Line</h3>
+        <h3>Move Ideas</h3>
+        <p id="coachingText" class="small-text"></p>
+        <ul id="coachingList" class="line-list compact-list"></ul>
+
+        <h3>Book Variations</h3>
         <ol id="openingLine" class="line-list"></ol>
+
+        <h3>Your Stats</h3>
+        <p id="statsSummary" class="small-text"></p>
+        <ul id="statsList" class="line-list compact-list"></ul>
 
         <h3>Game Moves</h3>
         <ol id="moveLog" class="line-list"></ol>
