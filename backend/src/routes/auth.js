@@ -7,6 +7,7 @@ const authRouter = express.Router();
 authRouter.post("/register", async (req, res, next) => {
   try {
     const username = String(req.body.username || "").trim();
+    const email = String(req.body.email || "").trim().toLowerCase();
     const password = String(req.body.password || "");
 
     if (username.length < 2) {
@@ -17,19 +18,28 @@ authRouter.post("/register", async (req, res, next) => {
       return res.status(400).json({ error: "Password must be at least 6 characters." });
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Enter a valid email address." });
+    }
+
     const existing = await query("select id from users where lower(username) = lower($1)", [username]);
     if (existing.rows.length) {
       return res.status(409).json({ error: "Username already exists." });
     }
 
+    const existingEmail = await query("select id from users where lower(email) = lower($1)", [email]);
+    if (existingEmail.rows.length) {
+      return res.status(409).json({ error: "Email already exists." });
+    }
+
     const passwordHash = await hashPassword(password);
     const inserted = await query(
       `
-        insert into users (username, password_hash)
-        values ($1, $2)
-        returning id, username, created_at
+        insert into users (username, email, password_hash)
+        values ($1, $2, $3)
+        returning id, username, email, created_at
       `,
-      [username, passwordHash],
+      [username, email, passwordHash],
     );
 
     const user = inserted.rows[0];
@@ -40,6 +50,7 @@ authRouter.post("/register", async (req, res, next) => {
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         createdAt: user.created_at,
       },
     });
@@ -55,7 +66,7 @@ authRouter.post("/login", async (req, res, next) => {
 
     const result = await query(
       `
-        select id, username, password_hash, created_at
+        select id, username, email, password_hash, created_at
         from users
         where lower(username) = lower($1)
       `,
@@ -79,6 +90,7 @@ authRouter.post("/login", async (req, res, next) => {
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         createdAt: user.created_at,
       },
     });
@@ -89,7 +101,7 @@ authRouter.post("/login", async (req, res, next) => {
 
 authRouter.get("/me", requireAuth, async (req, res, next) => {
   try {
-    const result = await query("select id, username, created_at from users where id = $1", [req.user.sub]);
+    const result = await query("select id, username, email, created_at from users where id = $1", [req.user.sub]);
     const user = result.rows[0];
 
     if (!user) {
@@ -100,6 +112,7 @@ authRouter.get("/me", requireAuth, async (req, res, next) => {
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         createdAt: user.created_at,
       },
     });

@@ -3,9 +3,17 @@ create extension if not exists pgcrypto;
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   username text unique not null,
+  email text unique not null,
   password_hash text not null,
   created_at timestamptz not null default now()
 );
+
+alter table users add column if not exists email text;
+update users
+set email = concat(username, '@placeholder.local')
+where email is null;
+alter table users alter column email set not null;
+create unique index if not exists users_email_unique_idx on users (lower(email));
 
 create table if not exists opening_progress (
   id uuid primary key default gen_random_uuid(),

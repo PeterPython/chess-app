@@ -435,6 +435,7 @@ const loginPasswordInput = document.getElementById("loginPassword");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const newUsernameInput = document.getElementById("newUsername");
+const newEmailInput = document.getElementById("newEmail");
 const newPasswordInput = document.getElementById("newPassword");
 const createUserBtn = document.getElementById("createUserBtn");
 const accountStatusEl = document.getElementById("accountStatus");
@@ -1591,6 +1592,7 @@ function renderAccountStatus() {
 
 async function onCreateAccount() {
   const usernameRaw = newUsernameInput.value.trim();
+  const emailRaw = newEmailInput.value.trim();
   const passwordRaw = newPasswordInput.value;
 
   if (usernameRaw.length < 2) {
@@ -1603,11 +1605,17 @@ async function onCreateAccount() {
     return;
   }
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
+    setAccountMessage("Enter a valid email address.", "bad");
+    return;
+  }
+
   try {
     const response = await apiRequest("/auth/register", {
       method: "POST",
       body: JSON.stringify({
         username: usernameRaw,
+        email: emailRaw,
         password: passwordRaw,
       }),
     });
@@ -1618,6 +1626,7 @@ async function onCreateAccount() {
     saveStore();
 
     newUsernameInput.value = "";
+    newEmailInput.value = "";
     newPasswordInput.value = "";
     loginPasswordInput.value = "";
 
