@@ -448,6 +448,7 @@ const strengthSelect = document.getElementById("strengthSelect");
 const modeSelect = document.getElementById("modeSelect");
 const resetBtn = document.getElementById("resetBtn");
 const hintBtn = document.getElementById("hintBtn");
+const takebackBtn = document.getElementById("takebackBtn");
 const spacedStatusEl = document.getElementById("spacedStatus");
 
 const lessonStatusEl = document.getElementById("lessonStatus");
@@ -476,6 +477,7 @@ let isOpponentAnimating = false;
 let openingBook = null;
 let dataStore = loadStore();
 let lessonState = createEmptyLessonState();
+let takebackStack = [];
 
 bootstrap();
 
@@ -494,6 +496,7 @@ async function bootstrap() {
   modeSelect.addEventListener("change", onModeChange);
   resetBtn.addEventListener("click", () => resetLesson(true));
   hintBtn.addEventListener("click", onHintClick);
+  takebackBtn.addEventListener("click", onTakebackClick);
 
   loginBtn.addEventListener("click", onLogin);
   logoutBtn.addEventListener("click", onLogout);
@@ -605,6 +608,7 @@ function resetLesson(showMessage) {
   selectedSquare = null;
   legalTargets = [];
   isOpponentAnimating = false;
+  takebackStack = [];
 
   const opening = resolveOpeningForMode();
   openingBook = getOpeningBook(opening);
@@ -692,6 +696,23 @@ function onHintClick() {
 
   setLessonMessage(`Out-of-book hint: consider ${genericHint.san}.`, "");
   renderStatus();
+}
+
+function onTakebackClick() {
+  if (isOpponentAnimating || !takebackStack.length) {
+    return;
+  }
+
+  if (opponentTimer) {
+    clearTimeout(opponentTimer);
+    opponentTimer = null;
+  }
+
+  const snapshot = takebackStack.pop();
+  restoreSnapshot(snapshot);
+  setLessonMessage("Reverted to the position before your last move.", "");
+  renderAll();
+  scheduleOpponentMove();
 }
 
 function scheduleOpponentMove() {
@@ -884,9 +905,11 @@ function handleSquareClick(square) {
 
   const isTarget = legalTargets.some((move) => move.to === square);
   if (isTarget) {
+    pushTakebackSnapshot();
     const bookEntryBeforeMove = currentBookEntry();
     const move = game.move({ from: selectedSquare, to: square, promotion: "q" });
     if (!move) {
+      takebackStack.pop();
       clearSelection();
       renderBoard();
       return;
@@ -1474,6 +1497,7 @@ function renderStatus() {
 
   gameStatusEl.textContent = gameStatus;
   hintBtn.disabled = game.turn() !== playerSide || game.isGameOver() || isOpponentAnimating;
+  takebackBtn.disabled = !takebackStack.length || isOpponentAnimating;
 
   recordGameResultIfNeeded();
 }
@@ -2044,6 +2068,61 @@ function validateOpeningCatalog() {
       }
     }
   }
+}
+
+function pushTakebackSnapshot() {
+  takebackStack.push({
+    moves: game.history({ verbose: true }).map((move) => ({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
+    })),
+    lessonState: cloneLessonState(lessonState),
+    selectedSquare,
+    legalTargets: legalTargets.map((move) => ({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
+    })),
+  });
+}
+
+function restoreSnapshot(snapshot) {
+  game = new Chess();
+  for (const move of snapshot.moves) {
+    game.move(move);
+  }
+
+  lessonState = cloneLessonState(snapshot.lessonState);
+  selectedSquare = snapshot.selectedSquare;
+  legalTargets = [];
+
+  if (selectedSquare) {
+    legalTargets = game.moves({ square: selectedSquare, verbose: true });
+  } else if (snapshot.legalTargets.length) {
+    legalTargets = snapshot.legalTargets
+      .map((savedMove) =>
+        game.moves({ verbose: true }).find(
+          (move) =>
+            move.from === savedMove.from &&
+            move.to === savedMove.to &&
+            (move.promotion ?? "") === (savedMove.promotion ?? ""),
+        ),
+      )
+      .filter(Boolean);
+  }
+}
+
+function cloneLessonState(state) {
+  return {
+    inBook: state.inBook,
+    bestPly: state.bestPly,
+    session: state.session
+      ? {
+          ...state.session,
+        }
+      : null,
+  };
 }
 
 async function restoreSession() {
